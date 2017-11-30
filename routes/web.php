@@ -21,11 +21,21 @@ $router->post('v1/addressTrimmer', function (\Illuminate\Http\Request $request) 
         'data' => 'required|max:90'
     ]);
 
-    $arrayAddress = str_split($request->input('data'), 30);
+    $longAddress = $request->input('data');
+    $maxLenghtPerLine = 30;
+    $lines = ceil(strlen($longAddress)/$maxLenghtPerLine);
 
-    $i = 1;
-    foreach ($arrayAddress as $address) {
-        $result['address' . $i++] = trim($address);
+    $startLine = 0;
+    for($i=1;$i<=$lines;$i++) {
+
+        if ($i == $lines) {
+            $result['Address' . $i] = $longAddress;
+            break;
+        }
+
+        $lastSpace = strrpos(substr($longAddress, $startLine, $maxLenghtPerLine), ' ');
+        $result['Address' . $i] = substr($longAddress, 0, $lastSpace);
+        $longAddress = trim(str_replace($result['Address' . $i], '', $longAddress));
     }
 
     return response()->json($result);
